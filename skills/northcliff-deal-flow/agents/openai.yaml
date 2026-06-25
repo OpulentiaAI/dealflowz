@@ -1,0 +1,4 @@
+interface:
+  display_name: "Northcliff Deal Flow"
+  short_description: "Track Northcliff deal sourcing workflows"
+  default_prompt: "Use $northcliff-deal-flow to research, score, and track a lower-middle-market acquisition lead through Attio."
