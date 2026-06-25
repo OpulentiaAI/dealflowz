@@ -256,7 +256,8 @@ async function cmdSourcingRun(flags: Record<string, string | boolean>): Promise<
   const seedDomain = getFlagStr(flags, "domain");
   const seedUid = getFlagStr(flags, "company-uid");
   const listName = getFlagStr(flags, "list-name");
-  const enrich = getFlagBool(flags, "enrich") || flags["enrich"] === undefined; // default true
+  const noEnrich = getFlagBool(flags, "no-enrich");
+  const enrich = !noEnrich && (getFlagBool(flags, "enrich") || flags["enrich"] === undefined); // default true
   const mirrorName = getFlagStr(flags, "mirror-name");
 
   if (!terms && !seedDomain && !seedUid) {

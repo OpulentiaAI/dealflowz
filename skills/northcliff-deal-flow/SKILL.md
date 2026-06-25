@@ -25,14 +25,14 @@ Run this check every time the skill is used, before new research, imports, or CR
 - Read `references/grata-workflows.md` when using Grata company search, similar search, enrichment, bulk enrichment, or list management.
 - Read `references/attio-tracking.md` when designing or updating Attio objects, lists, fields, automations, app connections, tasks, or API syncs, and any time Attio setup or configuration is required.
 - Read `references/attio-toolkit.md` when invoking the Composio Attio connector to inspect, create, update, or verify Attio records, lists, objects, or notes.
-- Read `references/cli-tools.md` when using the grata-pp-cli or attio-pp-cli TypeScript CLIs for Grata search/enrichment/list operations, Attio record/list/note operations, or compound commands (sourcing-run, setup-check, ensure-structure).
+- Read `references/cli-tools.md` when using the grata-pp-cli, attio-pp-cli, or email-pp-cli TypeScript CLIs for Grata search/enrichment/list operations, Attio record/list/note operations, email send/draft/read operations, or compound commands (sourcing-run, setup-check, ensure-structure, run-update-email).
 - Read `references/process-run-email.md` when sending, drafting, or verifying run-update emails.
 - Use `scripts/validate_gate_packet.py` when a structured gate packet exists or when you need to test whether a deal has enough data to advance.
 
 ## Operating Rules
 
 - Opulent drives Attio setup and configuration. Before any deal-flow run writes to Attio, Opulent inspects the workspace, ensures the required objects, lists, attributes, and relationships exist, verifies each change with a read-after-write check, and records every configuration action in the completion packet. Do not wait for the user to manually configure Attio. Use `attio-pp-cli setup-check` and `attio-pp-cli ensure-structure` to verify and guide setup. See `references/attio-tracking.md` for the required structure and setup procedure, `references/attio-toolkit.md` for the Composio Attio connector tools, and `references/cli-tools.md` for the CLIs.
-- Prefer the grata-pp-cli and attio-pp-cli TypeScript CLIs (under `cli/` in the dealflowz repo) for Grata and Attio operations. They are agent-native, token-efficient, and support compound commands that collapse multiple API calls into one. Build them with `npm run build` in each CLI directory. See `references/cli-tools.md` for full command reference.
+- Prefer the grata-pp-cli, attio-pp-cli, and email-pp-cli TypeScript CLIs (under `cli/` in the dealflowz repo) for Grata, Attio, and email operations. They are agent-native, token-efficient, and support compound commands that collapse multiple API calls into one. Build them with `npm run build` in each CLI directory. See `references/cli-tools.md` for full command reference.
 - Treat the CRM as the system of record for companies, brokers, contacts, communications, files, stages, and next actions.
 - Prefer Grata for structured proprietary sourcing when accessible, but do not block research if Grata is unavailable. Use any permitted source path that can produce evidence and confidence labels.
 - Never mark a company investable only from automation. Use automation to enrich, draft, classify, and prepare review.

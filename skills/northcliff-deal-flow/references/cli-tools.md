@@ -1,6 +1,6 @@
 # CLI Tools Reference
 
-Northcliff deal flow uses two agent-native TypeScript CLIs, built in the style of [cli-printing-press](https://github.com/mvanhorn/cli-printing-press). Both live under `cli/` in the dealflowz repo and share the same conventions: token-efficient compact output, compound commands, local mirrors for offline queries, and `--json` for raw output.
+Northcliff deal flow uses three agent-native TypeScript CLIs, built in the style of [cli-printing-press](https://github.com/mvanhorn/cli-printing-press). All live under `cli/` in the dealflowz repo and share the same conventions: token-efficient compact output, compound commands, local mirrors for offline queries, and `--json` for raw output.
 
 ## Build and Install
 
@@ -10,6 +10,9 @@ cd cli/grata-pp-cli && npm install && npm run build
 
 # Attio CLI
 cd cli/attio-pp-cli && npm install && npm run build
+
+# Email CLI
+cd cli/email-pp-cli && npm install && npm run build
 ```
 
 After building, alias or symlink the binaries:
@@ -17,12 +20,14 @@ After building, alias or symlink the binaries:
 ```bash
 alias grata-pp-cli="node /path/to/dealflowz/cli/grata-pp-cli/dist/index.js"
 alias attio-pp-cli="node /path/to/dealflowz/cli/attio-pp-cli/dist/index.js"
+alias email-pp-cli="node /path/to/dealflowz/cli/email-pp-cli/dist/index.js"
 ```
 
 ## Auth
 
 - Grata: `GRATA_API_KEY` env or `--api-key=KEY`. Get a token from Grata admin account settings.
 - Attio: `ATTIO_API_KEY` env or `--api-key=KEY`. Get a token from Attio Settings > API tokens.
+- Email (Gmail): `GMAIL_ACCESS_TOKEN` env or `--token=TOKEN`. Obtain an OAuth token with `gmail.send` scope from Google OAuth flow.
 
 ## grata-pp-cli
 
@@ -139,20 +144,82 @@ attio-pp-cli create-note --parent-object=companies --parent-record-id=rec_123 --
 
 Results saved with `--mirror-name` are stored as JSON under `~/.attio-pp/mirror/` (override with `ATTIO_PP_MIRROR` env).
 
-## Testing
+## email-pp-cli
 
-Both CLIs have offline test suites that require no API key and no network:
+Token-efficient CLI for the Gmail API. Used for sending, drafting, and reading emails, including the compound `run-update-email` command for Northcliff process-run update emails.
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `profile` | Get the authenticated user's profile (email address) |
+| `send` | Send an email message |
+| `draft` | Create a draft email |
+| `draft-send` | Send an existing draft by ID |
+| `draft-list` | List drafts |
+| `draft-delete` | Delete a draft (destructive, requires --confirm) |
+| `messages` | List messages in inbox (with search query) |
+| `message` | Get a single message by ID (decodes body) |
+| `labels` | List all labels |
+| `run-update-email` | Compound: build + send/draft a Northcliff process-run update email |
+| `mirror-show` | Read a previously mirrored result set |
+| `mirror-list` | List files in the local mirror |
+
+### Compound Command: run-update-email
+
+Builds a Northcliff deal-flow process-update email following the `process-run-email.md` template and sends it (or creates a draft with `--draft`):
 
 ```bash
-cd cli/grata-pp-cli && npm run build && npm test   # 10 tests
-cd cli/attio-pp-cli && npm run build && npm test   # 12 tests
+email-pp-cli run-update-email \
+  --from=me@northcliff.com \
+  --to=team@northcliff.com \
+  --company="Acme LLC" \
+  --stage="Primary filter" \
+  --decision=pass \
+  --next-action="Call broker" \
+  --work="Grata search,Attio update" \
+  --verifications="Attio:record created,Email:verified" \
+  --mirror-name=run-001
 ```
 
-Tests verify: arg parsing, filter building, mirror round-trips, destructive confirm guards, and error paths.
+The email body is auto-generated with the standard Northcliff update structure: current status, work completed, system update verification, open items, human review needed, and blocked items.
+
+### Send and Draft
+
+```bash
+# Send a simple email
+email-pp-cli send --from=me@northcliff.com --to=broker@ib.com --subject="NDA Request" --body="Please find attached..."
+
+# Create a draft for review
+email-pp-cli draft --from=me@northcliff.com --to=owner@acme.com --subject="LOI" --body="Draft LOI terms..."
+
+# Search inbox for broker replies
+email-pp-cli messages --query="from:broker@ib.com newer_than:7d" --max-results=10
+
+# Read a specific message (body auto-decoded)
+email-pp-cli message --id=msg123
+```
+
+### Local Mirror
+
+Results saved with `--mirror-name` are stored as JSON under `~/.email-pp/mirror/` (override with `EMAIL_PP_MIRROR` env).
+
+## Testing
+
+All three CLIs have offline and mock-HTTP endpoint test suites that require no API key and no network:
+
+```bash
+cd cli/grata-pp-cli && npm run build && npm test   # 10 offline + 18 endpoint = 28 tests
+cd cli/attio-pp-cli && npm run build && npm test   # 12 offline + 17 endpoint = 29 tests
+cd cli/email-pp-cli && npm run build && npm test   # 9 offline + 13 endpoint = 22 tests
+```
+
+Tests verify: arg parsing, filter/body building, endpoint URLs, HTTP methods, auth headers, request bodies, mirror round-trips, destructive confirm guards, compound command call sequences, base64url encoding, and error paths.
 
 ## When to Use CLIs vs Composio Connector
 
 - Use `grata-pp-cli` for all Grata operations - it is the primary Grata interface for this skill.
 - Use `attio-pp-cli` for Attio record, list, note, and setup operations. The Composio Attio connector (documented in `references/attio-toolkit.md`) remains available as an alternative when a connector-based flow is preferred.
-- Prefer the CLIs for compound operations (`sourcing-run`, `setup-check`, `ensure-structure`) that would otherwise require multiple individual API calls.
+- Use `email-pp-cli` for sending, drafting, and reading emails, including the compound `run-update-email` command for Northcliff process-run update emails.
+- Prefer the CLIs for compound operations (`sourcing-run`, `setup-check`, `ensure-structure`, `run-update-email`) that would otherwise require multiple individual API calls.
 - Use `--json` when piping output to another tool or when the agent needs the raw API response.
