@@ -1,0 +1,158 @@
+# CLI Tools Reference
+
+Northcliff deal flow uses two agent-native TypeScript CLIs, built in the style of [cli-printing-press](https://github.com/mvanhorn/cli-printing-press). Both live under `cli/` in the dealflowz repo and share the same conventions: token-efficient compact output, compound commands, local mirrors for offline queries, and `--json` for raw output.
+
+## Build and Install
+
+```bash
+# Grata CLI
+cd cli/grata-pp-cli && npm install && npm run build
+
+# Attio CLI
+cd cli/attio-pp-cli && npm install && npm run build
+```
+
+After building, alias or symlink the binaries:
+
+```bash
+alias grata-pp-cli="node /path/to/dealflowz/cli/grata-pp-cli/dist/index.js"
+alias attio-pp-cli="node /path/to/dealflowz/cli/attio-pp-cli/dist/index.js"
+```
+
+## Auth
+
+- Grata: `GRATA_API_KEY` env or `--api-key=KEY`. Get a token from Grata admin account settings.
+- Attio: `ATTIO_API_KEY` env or `--api-key=KEY`. Get a token from Attio Settings > API tokens.
+
+## grata-pp-cli
+
+Token-efficient CLI for the Grata company search, similar search, enrichment, and list APIs.
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `search` | Company search by keywords and filters |
+| `similar` | Similar-company search by seed domain or company_uid |
+| `enrich` | Enrich a single company by domain or company_uid |
+| `bulk-enrich` | Bulk enrich multiple companies |
+| `lists` | Search existing lists |
+| `list-create` | Create a new list |
+| `list-modify` | Add or remove companies from a list |
+| `sourcing-run` | Compound: search/similar -> enrich -> save to list -> mirror locally |
+| `mirror-show` | Read a previously mirrored result set |
+| `mirror-list` | List files in the local mirror |
+
+### Compound Command: sourcing-run
+
+The signature printing-press pattern - one call that does what would otherwise take 4-5 separate API round-trips:
+
+```bash
+grata-pp-cli sourcing-run \
+  --terms="hvac,plumbing" \
+  --hq-state=TX \
+  --employees=10,200 \
+  --list-name="Texas HVAC Targets" \
+  --mirror-name=tx-hvac-001
+```
+
+Runs a company search, enriches each result, creates (or reuses) a Grata list, adds the companies to it, and saves the full result set to a local mirror file for offline compound queries later.
+
+### Key Search Filters
+
+- `--terms=a,b` - core terms (comma-separated, any-match within group)
+- `--exclude=a,b` - exclude terms
+- `--employees=10,100` - Grata employee estimate range [min,max]
+- `--founded=1970,2018` - year founded range
+- `--funding=0,100M` - funding size range (use allowed bounds)
+- `--ownership=investor_backed` - ownership filter
+- `--business-models=software` - business models
+- `--end-customer=b2b,b2c` - end customer types
+- `--hq-country=United States` - headquarters country
+- `--hq-state=TX` - headquarters state (requires country)
+- `--include-lists=uid1,uid2` / `--exclude-lists=uid1,uid2` - list filters
+- `--page-token=TOKEN` - pagination token
+
+### Local Mirror
+
+Results saved with `--mirror-name` are stored as JSON under `~/.grata-pp/mirror/` (override with `GRATA_PP_MIRROR` env). Read them back with `mirror-show` without any API calls.
+
+## attio-pp-cli
+
+Token-efficient CLI for the Attio CRM API.
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `list-objects` | List all objects in the workspace |
+| `get-object` | Get details and attributes for one object |
+| `list-lists` | List all lists in the workspace |
+| `list-records` | List records on an object (paginated) |
+| `find-record` | Find a record by ID or attribute filter |
+| `create-record` | Create a new record |
+| `update-record` | Update (patch) an existing record |
+| `delete-record` | Delete a record (destructive, requires --confirm) |
+| `list-notes` | List notes attached to a record |
+| `create-note` | Create a note on a record |
+| `delete-note` | Delete a note (destructive, requires --confirm) |
+| `setup-check` | Compound: verify workspace has required Northcliff objects/lists/attributes |
+| `ensure-structure` | Compound: inspect -> report missing -> guide creation of required structure |
+| `mirror-show` | Read a previously mirrored result set |
+| `mirror-list` | List files in the local mirror |
+
+### Compound Commands
+
+#### setup-check
+
+Verifies the workspace has the required Northcliff objects (`companies`, `people`, `deals`), lists (`Northcliff Deal Flow`, `Broker Coverage`), and all required attributes. Returns a structured report of what is present and missing.
+
+```bash
+attio-pp-cli setup-check
+```
+
+#### ensure-structure
+
+Runs the setup check, then outputs an actionable creation guide listing exactly which objects, attributes, and lists need to be created and how (Attio UI path or REST API endpoint).
+
+```bash
+attio-pp-cli ensure-structure --mirror-name=setup-001
+```
+
+### Record Operations
+
+```bash
+# Find by attribute
+attio-pp-cli find-record --object=people --filter=email=john@example.com
+
+# Create with shortcuts
+attio-pp-cli create-record --object=companies --name="Acme LLC" --domain=acme.com
+
+# Update with JSON values
+attio-pp-cli update-record --object=companies --record-id=rec_123 --values='{"stage":[{"value":"Primary filter"}]}'
+
+# Attach an evidence note
+attio-pp-cli create-note --parent-object=companies --parent-record-id=rec_123 --title="Source" --content="Grata search 2024-01-01"
+```
+
+### Local Mirror
+
+Results saved with `--mirror-name` are stored as JSON under `~/.attio-pp/mirror/` (override with `ATTIO_PP_MIRROR` env).
+
+## Testing
+
+Both CLIs have offline test suites that require no API key and no network:
+
+```bash
+cd cli/grata-pp-cli && npm run build && npm test   # 10 tests
+cd cli/attio-pp-cli && npm run build && npm test   # 12 tests
+```
+
+Tests verify: arg parsing, filter building, mirror round-trips, destructive confirm guards, and error paths.
+
+## When to Use CLIs vs Composio Connector
+
+- Use `grata-pp-cli` for all Grata operations - it is the primary Grata interface for this skill.
+- Use `attio-pp-cli` for Attio record, list, note, and setup operations. The Composio Attio connector (documented in `references/attio-toolkit.md`) remains available as an alternative when a connector-based flow is preferred.
+- Prefer the CLIs for compound operations (`sourcing-run`, `setup-check`, `ensure-structure`) that would otherwise require multiple individual API calls.
+- Use `--json` when piping output to another tool or when the agent needs the raw API response.
