@@ -1,6 +1,6 @@
 ---
 name: northcliff-deal-flow
-description: Guides Northcliff Capital deal sourcing and Attio CRM tracking for lower-middle-market acquisition leads. Use when researching companies, checking existing system work, connecting needed apps, broker-sourced teasers, enrichment, primary filter scoring, outreach, NDA or CIM collection, financial modeling prep, seller calls, LOI drafting support, not-target handling, or building verification and completion gates for deal-flow automations.
+description: Guides Northcliff Capital deal sourcing and Attio CRM tracking for lower-middle-market acquisition leads. Use when researching companies, checking existing system work, connecting needed apps, sending process-update emails, broker-sourced teasers, enrichment, primary filter scoring, outreach, NDA or CIM collection, financial modeling prep, seller calls, LOI drafting support, not-target handling, or building verification and completion gates for deal-flow automations.
 ---
 
 # Northcliff Deal Flow
@@ -23,6 +23,7 @@ Run this check every time the skill is used, before new research, imports, or CR
 - Read `references/northcliff-workflow.md` for stages, field requirements, gate logic, and not-target handling.
 - Read `references/company-research.md` when discovering, enriching, or scoring companies.
 - Read `references/attio-tracking.md` when designing or updating Attio objects, lists, fields, automations, app connections, tasks, or API syncs.
+- Read `references/process-run-email.md` when sending, drafting, or verifying run-update emails.
 - Use `scripts/validate_gate_packet.py` when a structured gate packet exists or when you need to test whether a deal has enough data to advance.
 
 ## Operating Rules
@@ -34,6 +35,7 @@ Run this check every time the skill is used, before new research, imports, or CR
 - Stop active outreach before setting `Not a target` or `Inactive`.
 - Require a next task, next touch date, or closed status before considering any lead complete.
 - Do not perform live CRM, email, file, or calendar writes until the relevant app connection is confirmed.
+- Verify every system update with a read-after-write check or equivalent evidence before reporting it as complete.
 
 ## Workflow
 
@@ -44,7 +46,9 @@ Run this check every time the skill is used, before new research, imports, or CR
 5. Research with the Plan -> Research -> Synthesize pattern from `references/company-research.md`.
 6. Update or propose CRM changes using the Attio model in `references/attio-tracking.md`.
 7. Apply the gate rules in `references/northcliff-workflow.md`.
-8. Produce a completion packet with status, evidence, open risks, required human review, and next action.
+8. Verify each system update: CRM records, tasks, notes, files, calendar events, emails, models, and local artifacts.
+9. Send or draft a process-run update email using `references/process-run-email.md`.
+10. Produce a completion packet with status, evidence, open risks, required human review, and next action.
 
 ## Deal Packet Shape
 
@@ -79,6 +83,7 @@ Before advancing a stage, verify:
 - A human review item exists for business quality, revenue quality, normalized EBITDA, valuation expectation, seller psychology, or LOI terms when those judgments are relevant.
 - Attio tracking fields, stage, status, linked broker/contact records, and tasks are internally consistent.
 - Any disqualification includes a not-target reason, stopped sequence, communication history, and reactivation date only when timing-related.
+- Every claimed system update has verification evidence: record ID, task ID, file path, commit hash, email message ID, API response, or a reread snapshot.
 
 When a JSON packet is available, run:
 
@@ -96,5 +101,7 @@ End every substantive run with:
 - `CRM updates`: fields, links, tasks, files, and stage changes to write.
 - `Existing work checked`: files, records, threads, packets, or exports found and reused.
 - `Connections`: apps/tools confirmed, connected, or blocked.
+- `System update verification`: each update made, how it was verified, and any failed verification.
+- `Run update email`: sent, drafted, skipped, or blocked; include recipient, subject, and message ID when available.
 - `Human review`: decisions automation must not make.
 - `Next action`: one owner, one due date or trigger, and one expected output.
