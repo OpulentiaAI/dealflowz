@@ -90,6 +90,44 @@ Broker fields:
 | Call completed | Extract notes, action items, terms, risks | Decide whether to draft LOI |
 | LOI stage reached | Generate first-pass term summary and missing-item checklist | Approve final LOI terms before sending |
 
+## Grata Sourcing Gate
+
+Use this gate before importing proprietary Grata leads to Attio.
+
+Required source evidence:
+
+- Search type: company search or similar search
+- Search filter JSON or saved filter summary
+- Seed domain or seed `company_uid` for similar search
+- Grata list UID if companies were saved to a list
+- Result `company_uid`, domain, Grata URL, description, count, and `page_token` when present
+- Enrichment timestamp and source file or API response
+
+Search filter controls:
+
+- Use `terms_include.groups` with `terms_operator` and `terms_depth` to separate core keywords from mention-only keywords.
+- Use `terms_exclude` for off-thesis, franchise, staffing, broker, investor, or software-only exclusions when applicable.
+- Use `lists.include` to continue working an existing list and `lists.exclude` to avoid prior reviewed or rejected companies.
+- Use `headquarters.include` for target geography. If city is populated, state must also be populated.
+- Use `business_models`, `end_customer`, ownership, funding, employee count, employee growth, year founded, and industry classifications only when they support the thesis rather than overfitting the search.
+
+List workflow:
+
+- Search existing lists before creating a new one.
+- Create a list only when no suitable list exists.
+- Rename a list when the thesis name changes rather than creating duplicates.
+- Modify list membership in batches and record processed and not-processed domains.
+- Treat not-processed domains as review items, not silent failures.
+
+Enrichment workflow:
+
+- For search results, first capture basic fields: `company_uid`, name, domain, Grata URL, and description.
+- For shortlisted companies, enrich detailed fields: active status, headquarters, locations, revenue estimate, employee estimates, employee growth, primary phone, primary email, social links, ownership status, entity type, owner, ultimate owner, organization type, year founded, funding, keywords, end customer, business models, classifications, conferences, contacts, and investors.
+- Bulk enrichment should return an `errors` array and per-company `input`; log both.
+- Do not import companies with unresolved domain matching issues until the domain is reviewed.
+
+Expected result: Grata batches enter CRM with traceable search logic, deduplicated list membership, enriched fields, and explicit review items.
+
 ## Primary Filter Gate
 
 Check:
@@ -225,4 +263,3 @@ Common reasons:
 - Return profile fails
 - No response
 - Broker relationship inactive
-

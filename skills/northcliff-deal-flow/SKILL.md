@@ -1,6 +1,6 @@
 ---
 name: northcliff-deal-flow
-description: Guides Northcliff Capital deal sourcing and Attio CRM tracking for lower-middle-market acquisition leads. Use when researching companies, checking existing system work, connecting needed apps, sending process-update emails, broker-sourced teasers, enrichment, primary filter scoring, outreach, NDA or CIM collection, financial modeling prep, seller calls, LOI drafting support, not-target handling, or building verification and completion gates for deal-flow automations.
+description: Guides Northcliff Capital deal sourcing, Grata company search, enrichment, list workflows, and Attio CRM tracking for lower-middle-market acquisition leads. Use when researching companies, checking existing system work, connecting needed apps, sending process-update emails, broker-sourced teasers, enrichment, primary filter scoring, outreach, NDA or CIM collection, financial modeling prep, seller calls, LOI drafting support, not-target handling, or building verification and completion gates for deal-flow automations.
 ---
 
 # Northcliff Deal Flow
@@ -22,6 +22,7 @@ Run this check every time the skill is used, before new research, imports, or CR
 
 - Read `references/northcliff-workflow.md` for stages, field requirements, gate logic, and not-target handling.
 - Read `references/company-research.md` when discovering, enriching, or scoring companies.
+- Read `references/grata-workflows.md` when using Grata company search, similar search, enrichment, bulk enrichment, or list management.
 - Read `references/attio-tracking.md` when designing or updating Attio objects, lists, fields, automations, app connections, tasks, or API syncs.
 - Read `references/process-run-email.md` when sending, drafting, or verifying run-update emails.
 - Use `scripts/validate_gate_packet.py` when a structured gate packet exists or when you need to test whether a deal has enough data to advance.
@@ -29,6 +30,7 @@ Run this check every time the skill is used, before new research, imports, or CR
 ## Operating Rules
 
 - Treat the CRM as the system of record for companies, brokers, contacts, communications, files, stages, and next actions.
+- Prefer Grata for structured proprietary sourcing when accessible, but do not block research if Grata is unavailable. Use any permitted source path that can produce evidence and confidence labels.
 - Never mark a company investable only from automation. Use automation to enrich, draft, classify, and prepare review.
 - Preserve source evidence. Every material claim should have a source, confidence, and date.
 - Distinguish `Verified`, `Estimated`, and `Unknown` values. Do not fill unknown revenue, EBITDA, profitability, geography, or seller intent with guesses.
@@ -43,7 +45,7 @@ Run this check every time the skill is used, before new research, imports, or CR
 2. Determine the current stage and the next required gate.
 3. Complete the startup check and app connection check.
 4. Plan the work: list the missing fields, documents, people, and decisions.
-5. Research with the Plan -> Research -> Synthesize pattern from `references/company-research.md`.
+5. Research with the Plan -> Research -> Synthesize pattern from `references/company-research.md`; if Grata is inaccessible, use the non-Grata sourcing fallback in that reference.
 6. Update or propose CRM changes using the Attio model in `references/attio-tracking.md`.
 7. Apply the gate rules in `references/northcliff-workflow.md`.
 8. Verify each system update: CRM records, tasks, notes, files, calendar events, emails, models, and local artifacts.
