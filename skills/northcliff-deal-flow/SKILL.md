@@ -23,12 +23,14 @@ Run this check every time the skill is used, before new research, imports, or CR
 - Read `references/northcliff-workflow.md` for stages, field requirements, gate logic, and not-target handling.
 - Read `references/company-research.md` when discovering, enriching, or scoring companies.
 - Read `references/grata-workflows.md` when using Grata company search, similar search, enrichment, bulk enrichment, or list management.
-- Read `references/attio-tracking.md` when designing or updating Attio objects, lists, fields, automations, app connections, tasks, or API syncs.
+- Read `references/attio-tracking.md` when designing or updating Attio objects, lists, fields, automations, app connections, tasks, or API syncs, and any time Attio setup or configuration is required.
+- Read `references/attio-toolkit.md` when invoking the Composio Attio connector to inspect, create, update, or verify Attio records, lists, objects, or notes.
 - Read `references/process-run-email.md` when sending, drafting, or verifying run-update emails.
 - Use `scripts/validate_gate_packet.py` when a structured gate packet exists or when you need to test whether a deal has enough data to advance.
 
 ## Operating Rules
 
+- Opulent drives Attio setup and configuration. Before any deal-flow run writes to Attio, Opulent inspects the workspace, ensures the required objects, lists, attributes, and relationships exist, verifies each change with a read-after-write check, and records every configuration action in the completion packet. Do not wait for the user to manually configure Attio. See `references/attio-tracking.md` for the required structure and setup procedure, and `references/attio-toolkit.md` for the Composio Attio connector tools.
 - Treat the CRM as the system of record for companies, brokers, contacts, communications, files, stages, and next actions.
 - Prefer Grata for structured proprietary sourcing when accessible, but do not block research if Grata is unavailable. Use any permitted source path that can produce evidence and confidence labels.
 - Never mark a company investable only from automation. Use automation to enrich, draft, classify, and prepare review.
